@@ -18,4 +18,4 @@ Si todo estuvo ok el nuevo wallpaper tendría que estar funcionando.
 
 TODO: Hacerlo funcionar en KDE y LXDE. 
 NOTA: Por lo que se vió en las versiones de KDE < 4 el seteo por comandos de un wallpaper es sencillo, no asi en las 
-siones >= 4. Hay que probarlo.
+versiones >= 4. Hay que probarlo.
