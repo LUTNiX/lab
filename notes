@@ -1,0 +1,10 @@
+# Para la resolución 16:9 y para la font Liberation-Mono-Regular: entonces
+# entran 56 caracteres si el valor horizontal de -geometry es -130 y el
+# vertical es +164 y con un solo caracter al horizontal lo tengo que hacer
+# llegar a +530.  Por lo tanto hay |-130| + |530| = 660 en total.  Lo que me
+# lleva a la conclusión de que cada caracter ocupa aprox 12px (660/56 =
+# 11.785714285714286).  Al ser la font mono puedo saber que esto es cte para
+# cualquier caracter.  Por lo tanto si mi label mide 22 caracteres el valor
+# horizontal de -geometry es 530-264 = 266? SI!.  Problema casi resuelto. Cómo
+# multiplico números en bash? Como en cualquier lado.  Puedo en bash manejar
+# enteros negativos? Por supuesto Marioooo!
