@@ -105,8 +105,10 @@ function get_de {
             exit 2 
         ;;
         'lxsession')
-            message "Nada para hacer en LXDE. Abortando..." ${RED}
-            exit 2
+            pcmanfm --wallpaper-mode=stretch
+            DE_COMMAND="pcmanfm -w $NEW_IMAGE"
+            DE_INFO="LXDE: se selecciona 'pcmanfm'"
+            return 0
         ;;
         'mate-session')
             DE_COMMAND="mateconftool-2 -t string -s /desktop/mate/background/picture_filename ${NEW_IMAGE}"
