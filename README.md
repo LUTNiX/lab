@@ -16,6 +16,6 @@ Para ejecutar el script desde consola hay que hacer:
 
 Si todo estuvo ok el nuevo wallpaper tendría que estar funcionando.
 
-TODO: Hacerlo funcionar en KDE y LXDE. 
+TODO: Hacerlo funcionar en KDE.
 NOTA: Por lo que se vió en las versiones de KDE < 4 el seteo por comandos de un wallpaper es sencillo, no asi en las 
 versiones >= 4. Hay que probarlo.
