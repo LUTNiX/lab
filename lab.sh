@@ -21,7 +21,7 @@ vertical=+164
 font_const=Liberation-Mono-Regular
 xdpyinfo_cmd=$(which xdpyinfo)
 label=$(whoami | awk '{print $1}')'@'$(uname -n)':/#'
-let font_pix_length=12
+font_pix_length=12
 gravity='South'
 
 if [ -e ./lab.cfg ]
