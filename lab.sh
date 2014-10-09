@@ -20,7 +20,7 @@ horizontal_max=530
 vertical=+164
 font_const=Liberation-Mono-Regular
 xdpyinfo_cmd=$(which xdpyinfo)
-label=$(whoami | awk '{print $1}')'@'$(uname -n)':/#'
+label=$(whoami | gawk '{print $1}')'@'$(uname -n)':/#'
 font_pix_length=12
 gravity='South'
 
@@ -34,6 +34,8 @@ NEW_IMAGE=${LUTNIX_DIR}/${NEW_IMAGE_FILE}
 let label_length=${#label}*${font_pix_length}
 let horizontal=${horizontal_max}-${label_length}
 
+#function logger
+
 function message {
     # $1 : Message
     # $2 : Color
@@ -42,38 +44,48 @@ function message {
     echo -e "${2}${1}${NONE}"
 }
 
+function my_exit {
+    if ! [ "$1" -eq 0 ]
+    then
+        message "No pudimos establecer tu fondo" ${RED}
+        message "Contactate con el grupo informandonos del error a: lutnix@googlegroups.com." ${RED}
+        message "O buscanos por la facu!" ${RED}
+    fi
+    exit $1
+}
+
 ########################################
 #-- INICIO CONFIGURACIÓN DE ARCHIVOS --#
 ########################################
 function configure_files {
     if ! [ -d ${LUTNIX_DIR} ]
     then
-        if mkdir -p ${LUTNIX_DIR}
+        if mkdir -p ${LUTNIX_DIR} >> ${LOGFILE} 2>&1
         then
             message "Se crea directorio: ${LUTNIX_DIR}" ${BLUE}
         else
             message "ERROR! No se pudo crear ${LUTNIX_DIR}" ${RED}
-            return 4
+            my_exit 4
         fi
     fi
     if ! [ -e ${IMAGE_169} ]
     then
-        if cp ./Wall-LUTNiX2_v2-16:9.png ${IMAGE_169}
+        if cp ./Wall-LUTNiX2_v2-16:9.png ${IMAGE_169} >> ${LOGFILE} 2>&1
         then
             message "Se copia plantilla: ${IMAGE_169}" ${BLUE}
         else 
             message "ERROR! No se pudo crear plantilla: ${IMAGE_169}" ${RED}
-            return 5
+            my_exit 5
         fi
     fi
-    if ! [ -e $IMAGE_43 ]
+    if ! [ -e ${IMAGE_43} ]
     then
-        if cp ./Wall-LUTNiX2_v2-16:9.png ${IMAGE_43}
+        if cp ./Wall-LUTNiX2_v2-16:9.png ${IMAGE_43} >> ${LOGFILE} 2>&1
         then
             message "Se copia plantilla: ${IMAGE_43}" ${BLUE}
         else 
             message "ERROR! No se pudo crear plantilla: ${IMAGE_43}" ${RED}
-            return 5
+            my_exit 5
         fi
     fi
 }
@@ -82,7 +94,7 @@ function configure_files {
 #-- OBTENGO ENTORNO DE ESCRITORIO --#
 #####################################
 function get_de {
-    case $(pgrep -u ${USER} -xl "gnome-session|ksmserver|lxsession|mate-session|xfce4-session" | awk /[0-9]/'{print $2}') in
+    case $(pgrep -u ${USER} -xl "gnome-session|ksmserver|lxsession|mate-session|xfce4-session"|awk /[0-9]/'{print $2}') in
         'gnome-session')
 	        gnome_version=$(gnome-session --version|grep -Eo '[0-9]{1}'|head -1)
     	    if [ ${gnome_version} -ge 3 ]
@@ -91,18 +103,18 @@ function get_de {
                 then
                     gsettings set org.gnome.desktop.background picture-options "stretched"
                 fi
-	            DE_COMMAND="gsettings set org.gnome.desktop.background picture-uri file:///${NEW_IMAGE}"
+                DE_COMMAND="gsettings set org.gnome.desktop.background picture-uri file:///${NEW_IMAGE}"
                 DE_INFO="GNOME3: se selecciona 'gsettings'"
                 return 0
     	    else
-	        	DE_COMMAND="gconftool --type str --set /desktop/gnome/background/picture_image ${NEW_IMAGE}"
+                DE_COMMAND="gconftool --type str --set /desktop/gnome/background/picture_image ${NEW_IMAGE}"
                 DE_INFO="GNOME2: se selecciona 'gconftool'"
                 return 0
     	    fi
         ;;
         'ksmserver')
             message "Nada para hacer en KDE4. Abortando..." ${RED}
-            exit 2 
+            my_exit 2 
         ;;
         'lxsession')
             pcmanfm --wallpaper-mode=stretch
@@ -133,7 +145,7 @@ function get_de {
 function resolution_config {
     if [ -n "${xdpyinfo_cmd}" ];
     then
-        current_resolution=$(${xdpyinfo_cmd}|awk --posix '/dimensions:[[:space:]]+[0-9]{2,4}x[0-9]{2,4}/''{print $2}')
+        current_resolution=$(${xdpyinfo_cmd}|gawk --re-interval '/dimensions:[[:space:]]+[0-9]{2,4}x[0-9]{2,4}/''{print $2}')
     fi
 
     case ${current_resolution} in
@@ -173,36 +185,35 @@ function create_new_image {
         then
             return 0
         else
-            message -e "ERROR! Hubo problemas al crear la imagen nueva.\nVer ${LOGFILE} para mas informacion." ${RED}
-            exit 3
+            message "ERROR! Hubo problemas al crear la imagen nueva.\nVer ${LOGFILE} para mas informacion." ${RED}
+            my_exit 1
         fi
     else 
         message "Falta paquete ImageMagick o por los menos no existe comando convert. Abortando..." ${RED}
-        exit 1
+        my_exit 1
     fi
 }
 
+####################
+#-- MAIN PROGRAM --#
+####################
+
+echo $(date +%X) "Wecome tu L{UTN}iX: Beginning with lab!" > ${LOGFILE}
+
 echo -e "\nCreando directorio y archivos de plantilla..."
 configure_files
+
 echo -e "\nConfigurando..."
 get_de
 resolution_config
 create_new_image
 
-if [ 0 -eq 0 ]
-then
-    echo -e "\nEstableciendo Wallpaper, un segundo..."
-    ${DE_COMMAND} >> ${LOGFILE}
-    cmd_ret=$?
-    if [ "${cmd_ret}" -eq 0 ]
-    then 
-        rm ${LOGFILE}
-        message "${NEW_IMAGE} es tu fondo ahora!\n" ${GREEN}
-    fi
+echo -e "\nEstableciendo Wallpaper, un segundo..."
+if ${DE_COMMAND} >> ${LOGFILE} 2>&1
+then 
+    rm ${LOGFILE} ${IMAGE_169} ${IMAGE_43}
+    message "${NEW_IMAGE} es tu fondo ahora!\n" ${GREEN}
+    my_exit 0
 else
-    message "No pudimos establecer tu fondo" ${RED}
-    message "Contactate con el grupo informandonos del error a: lutnix@googlegroups.com." ${RED}
-    message "O buscanos por la facu!" ${RED}
+    my_exit 1
 fi
-
-exit 0
